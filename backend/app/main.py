@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Query
 from sqlalchemy import select
 from app.schemas import TaskCreate, TaskUpdate, TaskPatch
 from app.database import get_db
@@ -8,9 +8,11 @@ from sqlalchemy.orm import Session
 app = FastAPI()
 
 @app.get("/tasks/")
-async def fetch_data(db: Session = Depends(get_db)):
-    statement = select(Task)
+async def fetch_data(db: Session = Depends(get_db),offset: int = 0, limit: int = Query(default=10, ge=1, le=100)):
+    
+    statement = select(Task).order_by(Task.task_id).offset(offset).limit(limit) 
     tasks = db.scalars(statement).all()
+    
     return tasks
 
 @app.get("/tasks/{task_id}")
