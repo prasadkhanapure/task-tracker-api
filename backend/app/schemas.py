@@ -27,3 +27,17 @@ class TaskPatch(TaskBase):
     
     title: str | None = Field(default=None, min_length=1)
     completed: bool | None = None
+
+class TaskResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    task_id: int
+    title: str
+    completed: bool 
+
+class TaskListResponse(BaseModel):
+    items: list[TaskResponse]
+    total: int
+    offset: int
+    limit: int
+    
