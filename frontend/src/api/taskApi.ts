@@ -1,6 +1,11 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { Task, TaskListResponse } from "../types/task";
 
+interface PaginationParams {
+  offset: number;
+  limit: number;
+}
+
 const API_BASE_URL = "http://127.0.0.1:8000/";
 
 export const taskApi = createApi({
@@ -12,8 +17,11 @@ export const taskApi = createApi({
   }),
 
   endpoints: (builder) => ({
-    getTasks: builder.query<TaskListResponse, void>({
-      query: () => "tasks/",
+    getTasks: builder.query<TaskListResponse, PaginationParams>({
+      query: ({ offset, limit }) => ({
+        url: "tasks/",
+        params: { offset, limit },
+      }),
       providesTags: ["Tasks"],
     }),
 
@@ -57,5 +65,5 @@ export const {
   useGetTasksQuery,
   useUpdateTaskMutation,
   useDeleteTaskMutation,
-  useCreateTaskMutation
+  useCreateTaskMutation,
 } = taskApi;
