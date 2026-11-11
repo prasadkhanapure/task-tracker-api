@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException, Depends, Query
 from sqlalchemy import func, select
-from app.schemas import TaskCreate, TaskListResponse, TaskResponse, TaskUpdate, TaskPatch
+from app.schemas import ProjectCreate, ProjectResponse, ProjectUpdate, TaskCreate, TaskListResponse, TaskResponse, TaskUpdate, TaskPatch
 from app.database import get_db
-from app.models import Task
+from app.models import Task, Project
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi.middleware.cors import CORSMiddleware
@@ -165,3 +165,88 @@ def delete_task(
         )
 
     return {"message": f"Task {task_id} deleted successfully"}
+
+@app.post("/projects/", status_code=201, response_model=ProjectResponse)
+def create_project(projectpayload: ProjectCreate, db:Session = Depends(get_db)):
+    new_project = Project(
+        name = projectpayload.name,
+        description = projectpayload.description   
+    )
+
+    try:
+        db.add(new_project)
+        db.commit()
+        db.refresh(new_project)
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to create project"
+        )
+
+    return new_project
+
+@app.get("/projects/",response_model=list[ProjectResponse])
+def get_projects(db: Session = Depends(get_db)):
+    statement = select(Project).order_by(Project.project_id)
+    projects = db.scalars(statement).all()
+    return projects
+
+@app.get("/projects/{project_id}", response_model=ProjectResponse)
+def get_project_id(
+    project_id: int, 
+    db:Session = Depends(get_db)
+):
+
+    statement = select(Project).where(Project.project_id == project_id)
+    project = db.scalars(statement).first()
+
+    if project is None:
+            raise HTTPException(status_code=404, detail="Project not found!")
+    
+    return project
+
+@app.put("/projects/{project_id}", response_model=ProjectResponse)
+def update_project(project_id: int, payload: ProjectUpdate, db: Session = Depends(get_db)):
+    try:
+        project = db.get(Project, project_id)
+        if project is None:
+            raise HTTPException(status_code=404, detail="Project not found!")
+
+        project.name = payload.name
+        project.description = payload.description
+
+        db.commit()
+        db.refresh(project)
+
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to update Project"
+        )
+        
+    return project
+
+@app.delete("/projects/{project_id}")
+def delete_project(
+    project_id: int, 
+    db: Session = Depends(get_db)
+):
+
+    try: 
+        project = db.get(Project, project_id)
+        if project is None:
+            raise HTTPException(status_code=404, detail= "Project is not found!")
+            
+        db.delete(project)
+        db.commit()
+    
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to delete Project"
+        )
+    
+    return {"message": f"Project {project_id} deleted successfully"}

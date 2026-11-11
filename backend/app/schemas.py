@@ -4,6 +4,7 @@ class TaskBase(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 class TaskCreate(TaskBase):
     title: str = Field(min_length=1)
+    project_id: int = Field(gt=0)
     # completed: bool
 
 class TaskUpdate(TaskBase):
@@ -34,10 +35,28 @@ class TaskResponse(BaseModel):
     task_id: int
     title: str
     completed: bool 
+    project_id: int
 
 class TaskListResponse(BaseModel):
     items: list[TaskResponse]
     total: int
     offset: int
     limit: int
-    
+
+class ProjectBase(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+class ProjectCreate(ProjectBase):
+    name: str = Field(min_length=1)
+    description: str | None = None
+
+class ProjectUpdate(ProjectBase):
+    name: str = Field(min_length=1)
+    description: str | None = None
+
+class ProjectResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    project_id: int
+    name: str
+    description: str | None
