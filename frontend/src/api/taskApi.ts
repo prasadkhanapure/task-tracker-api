@@ -6,7 +6,7 @@ interface PaginationParams {
   limit: number;
 }
 
-const API_BASE_URL = "http://127.0.0.1:8000/";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const taskApi = createApi({
   reducerPath: "taskApi",
@@ -50,7 +50,10 @@ export const taskApi = createApi({
       invalidatesTags: ["Tasks"],
     }),
 
-    createTask: builder.mutation<Task, { title: string }>({
+    createTask: builder.mutation<
+      Task,
+      { title: string; project_id: number | null }
+    >({
       query: (body) => ({
         url: "tasks/",
         method: "POST",
