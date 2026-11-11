@@ -4,7 +4,7 @@ from app.schemas import ProjectCreate, ProjectResponse, ProjectUpdate, TaskCreat
 from app.database import get_db
 from app.models import Task, Project
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -238,10 +238,24 @@ def delete_project(
         project = db.get(Project, project_id)
         if project is None:
             raise HTTPException(status_code=404, detail= "Project is not found!")
-            
+
         db.delete(project)
         db.commit()
-    
+
+    except IntegrityError as error:
+        db.rollback()
+
+        if getattr(error.orig, "sqlstate", None) == "23503":
+            raise HTTPException(
+                status_code=409,
+                detail="Cannot delete project because it contains tasks"
+            )
+
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to delete project"
+        )
+
     except SQLAlchemyError:
         db.rollback()
         raise HTTPException(
