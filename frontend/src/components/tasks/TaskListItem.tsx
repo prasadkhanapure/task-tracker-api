@@ -1,7 +1,10 @@
 import { useState } from "react";
-import { useDeleteTaskMutation, useUpdateTaskMutation } from "../api/taskApi";
-import type { Task } from "../types/task";
+import {
+  useDeleteTaskMutation,
+  useUpdateTaskMutation,
+} from "../../api/taskApi";
 import { Check, X, Trash2 } from "lucide-react";
+import type { Task } from "../../types/task";
 
 interface TaskProps {
   task: Task;

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { useGetTasksQuery } from "../api/taskApi";
+
+import { useGetTasksQuery } from "../../api/taskApi";
 import InputTask from "./InputTask";
 import TaskSection from "./TaskSection";
-import Pagination from "./Pagination";
+import Pagination from "../Pagination";
 
 const TaskList = () => {
   const [page, setPage] = useState(1);

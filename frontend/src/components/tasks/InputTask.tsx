@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useCreateTaskMutation } from "../api/taskApi";
-import { useGetProjectsQuery } from "../api/projectApi";
+import { useCreateTaskMutation } from "../../api/taskApi";
+import { useGetProjectsQuery } from "../../api/projectApi";
 
 const InputTask = () => {
   const [title, setTitle] = useState<string>("");

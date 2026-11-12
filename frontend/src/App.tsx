@@ -1,10 +1,10 @@
 import "./App.css";
-import TaskList from "./components/TaskList";
+import TaskTrackerPage from "./components/TaskTrackerPage ";
 
 function App() {
   return (
     <>
-      <TaskList />
+      <TaskTrackerPage />
     </>
   );
 }
