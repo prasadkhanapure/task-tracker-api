@@ -1,4 +1,4 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { baseApi } from "./baseApi";
 import type { Task, TaskListResponse } from "../types/task";
 
 interface PaginationParams {
@@ -6,16 +6,7 @@ interface PaginationParams {
   limit: number;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-export const taskApi = createApi({
-  reducerPath: "taskApi",
-  tagTypes: ["Tasks"],
-
-  baseQuery: fetchBaseQuery({
-    baseUrl: API_BASE_URL,
-  }),
-
+export const taskApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getTasks: builder.query<TaskListResponse, PaginationParams>({
       query: ({ offset, limit }) => ({
@@ -31,6 +22,7 @@ export const taskApi = createApi({
         task_id: number;
         title: string;
         completed: boolean;
+        project_id: number;
       }
     >({
       query: ({ task_id, ...body }) => ({
@@ -52,7 +44,7 @@ export const taskApi = createApi({
 
     createTask: builder.mutation<
       Task,
-      { title: string; project_id: number | null }
+      { title: string; project_id: number }
     >({
       query: (body) => ({
         url: "tasks/",

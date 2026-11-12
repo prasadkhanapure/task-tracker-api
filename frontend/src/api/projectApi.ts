@@ -1,18 +1,9 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { Project } from "../types/project";
+import { baseApi } from "./baseApi";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-export const projectApi = createApi({
-  reducerPath: "projectApi",
-  tagTypes: ["Projects"],
-
-  baseQuery: fetchBaseQuery({
-    baseUrl: API_BASE_URL,
-  }),
-
+export const projectApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getProjects: builder.query<[Project], void>({
+    getProjects: builder.query<Project[], void>({
       query: () => ({
         url: "projects/",
       }),
