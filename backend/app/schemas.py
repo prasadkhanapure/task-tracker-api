@@ -10,6 +10,7 @@ class TaskCreate(TaskBase):
 class TaskUpdate(TaskBase):
     title: str = Field(min_length=1)
     completed: bool
+    project_id: int = Field(gt=0)
 
 class TaskPatch(TaskBase):
     @model_validator(mode="after")
