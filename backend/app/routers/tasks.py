@@ -82,6 +82,20 @@ def create_task(
         db.commit()
         db.refresh(new_task)
 
+    except IntegrityError as error:
+        db.rollback()
+
+        if getattr(error.orig, "sqlstate", None) == "23503":
+            raise HTTPException(
+                status_code=422,
+                detail="Project does not exist"
+            )
+
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to create Task"
+        )
+    
     except SQLAlchemyError:
         db.rollback()
         raise HTTPException(
