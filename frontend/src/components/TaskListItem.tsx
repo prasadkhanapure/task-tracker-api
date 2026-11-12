@@ -8,7 +8,7 @@ interface TaskProps {
 }
 
 const TaskListItem = ({ task }: TaskProps) => {
-  const { task_id, title, completed } = task;
+  const { task_id, title, completed, project_id } = task;
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
@@ -22,7 +22,8 @@ const TaskListItem = ({ task }: TaskProps) => {
         task_id,
         title,
         completed: !completed,
-      });
+        project_id,
+      }).unwrap();
     } catch (error) {
       console.error("Unable to update the task.", error);
     }
@@ -34,7 +35,7 @@ const TaskListItem = ({ task }: TaskProps) => {
     }
 
     try {
-      await deleteTask(task_id);
+      await deleteTask(task_id).unwrap();
     } catch (error) {
       console.error("Unable to delete the task.", error);
     }
@@ -51,7 +52,8 @@ const TaskListItem = ({ task }: TaskProps) => {
         task_id,
         title: editedTitle,
         completed,
-      });
+        project_id,
+      }).unwrap();
 
       setIsEditing(false);
     } catch (error) {
