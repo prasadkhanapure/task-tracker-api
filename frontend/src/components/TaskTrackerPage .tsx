@@ -1,5 +1,5 @@
 import { useState } from "react";
-import TaskList from "./TaskList";
+import TaskList from "./tasks/TaskList";
 import ProjectList from "./projects/ProjectList";
 
 type ActiveView = "tasks" | "projects";
