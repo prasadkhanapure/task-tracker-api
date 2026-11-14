@@ -1,18 +1,40 @@
 import { useEffect, useRef, useState } from "react";
-import { useCreateProjectMutation } from "../../api/projectApi";
+import {
+  useCreateProjectMutation,
+  useUpdateProjectMutation,
+} from "../../api/projectApi";
+import type { Project } from "../../types/project";
 
 interface ProjectCreationPopupProps {
   onClose: () => void;
+  project?: Project;
 }
-const ProjectCreationPopup = ({ onClose }: ProjectCreationPopupProps) => {
+const ProjectCreateEditPopup = ({
+  onClose,
+  project,
+}: ProjectCreationPopupProps) => {
   const [createProject, { isLoading: isCreateProjectLoading }] =
     useCreateProjectMutation();
 
-  const [name, setName] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
+  const [updateProject, { isLoading: isEditProjectLoading }] =
+    useUpdateProjectMutation();
+
+  const [name, setName] = useState<string>(project?.name ?? "");
+  const [description, setDescription] = useState<string>(
+    project?.description ?? "",
+  );
+  const isEditMode = Boolean(project);
+  const isSubmitting = isCreateProjectLoading || isEditProjectLoading;
+
+  const submitLabel = isSubmitting
+    ? isEditMode
+      ? "Updating..."
+      : "Creating..."
+    : isEditMode
+      ? "Update Project"
+      : "Create Project";
 
   const dialogRef = useRef<HTMLDialogElement>(null);
-
   useEffect(() => {
     const dialog = dialogRef.current;
     dialog?.showModal();
@@ -20,16 +42,26 @@ const ProjectCreationPopup = ({ onClose }: ProjectCreationPopupProps) => {
     return () => dialog?.close();
   }, []);
 
-  const handleProjectCreation = async () => {
+  const handleProjectCreateEditForm = async () => {
+    if (!name.trim() || isSubmitting) return;
+
     try {
-      await createProject({
-        name: name,
-        description: description,
-      }).unwrap();
+      if (project) {
+        await updateProject({
+          project_id: project.project_id,
+          name: name.trim(),
+          description: description.trim(),
+        }).unwrap();
+      } else {
+        await createProject({
+          name: name.trim(),
+          description: description.trim(),
+        }).unwrap();
+      }
 
       onClose();
     } catch (error) {
-      console.error("Unable to create the project.", error);
+      console.error("Unable to save the project.", error);
     }
   };
 
@@ -46,8 +78,9 @@ const ProjectCreationPopup = ({ onClose }: ProjectCreationPopupProps) => {
     >
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-slate-900">
-          Create New Project
+          {isEditMode ? "Update Project" : "Create New Project"}
         </h2>
+
         <p className="mt-1 text-sm text-slate-500">
           Organize your tasks into a project.
         </p>
@@ -98,30 +131,30 @@ const ProjectCreationPopup = ({ onClose }: ProjectCreationPopupProps) => {
       <div className="mt-8 flex justify-end gap-3">
         <button
           type="button"
-          onClick={handleProjectCreation}
-          disabled={!name.trim() || isCreateProjectLoading}
+          onClick={onClose}
+          disabled={isSubmitting}
           className="rounded-lg border border-slate-300
                px-5 py-2.5 text-sm font-medium
                text-slate-700 transition hover:bg-slate-100
                disabled:opacity-50"
         >
-          {isCreateProjectLoading ? "Creating..." : "Create Project"}
+          Cancel
         </button>
         <button
           type="button"
-          onClick={onClose}
-          disabled={isCreateProjectLoading}
+          onClick={handleProjectCreateEditForm}
+          disabled={!name.trim() || isSubmitting}
           className="rounded-lg bg-violet-600 px-5 py-2.5
                text-sm font-semibold text-white transition
                hover:bg-violet-700
                disabled:cursor-not-allowed
                disabled:opacity-50"
         >
-          Close
+          {submitLabel}
         </button>
       </div>
     </dialog>
   );
 };
 
-export default ProjectCreationPopup;
+export default ProjectCreateEditPopup;

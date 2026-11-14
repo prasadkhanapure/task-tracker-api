@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useGetProjectsQuery } from "../../api/projectApi";
 import ProjectCard from "./ProjectCard";
-import ProjectCreationPopup from "./ProjectCreationPopup";
+import ProjectCreateEditPopup from "./ProjectCreateEditPopup";
+import type { Project } from "../../types/project";
 
 const ProjectList = () => {
   const { data, isLoading, isError } = useGetProjectsQuery();
 
   const [isProjectPopupOpen, setIsCreationPopupOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
 
   if (isLoading) return <p>Loading Projects</p>;
   if (isError) return <p>Failed to load projects</p>;
@@ -31,12 +33,23 @@ const ProjectList = () => {
       </button>
 
       {isProjectPopupOpen && (
-        <ProjectCreationPopup onClose={() => setIsCreationPopupOpen(false)} />
+        <ProjectCreateEditPopup onClose={() => setIsCreationPopupOpen(false)} />
+      )}
+
+      {editingProject && (
+        <ProjectCreateEditPopup
+          project={editingProject}
+          onClose={() => setEditingProject(null)}
+        />
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {data?.map((project) => (
-          <ProjectCard key={project.project_id} project={project} />
+          <ProjectCard
+            key={project.project_id}
+            project={project}
+            onEdit={setEditingProject}
+          />
         ))}
       </div>
     </main>
