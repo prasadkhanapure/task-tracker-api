@@ -1,9 +1,11 @@
 from unittest.mock import MagicMock
-from fastapi.testclient import TestClient
+
 import pytest
-from app.main import app
 from app.database import get_db
+from app.main import app
 from app.models import Task
+from fastapi.testclient import TestClient
+
 
 @pytest.fixture
 def mock_db():
@@ -19,13 +21,10 @@ def mock_db():
     finally:
         app.dependency_overrides.pop(get_db, None)
 
+
 def test_get_task_success(mock_db):
-    
-    fake_task = Task(
-        task_id=1,
-        title="Learn fast API",
-        completed= False
-    )
+
+    fake_task = Task(task_id=1, title="Learn fast API", completed=False)
 
     mock_db.scalars.return_value.first.return_value = fake_task
 
@@ -35,6 +34,7 @@ def test_get_task_success(mock_db):
     assert response.status_code == 200
     assert isinstance(response.json(), dict)
     assert response.json()["title"] == "Learn fast API"
+
 
 def test_get_task_not_found(mock_db):
 
