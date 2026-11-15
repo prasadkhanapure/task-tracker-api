@@ -1,4 +1,7 @@
 import { useGetDashboardStatsQuery } from "../../api/dashboardApi";
+import { useGetProjectStatsQuery } from "../../api/projectApi";
+import ProjectTasksChart from "./charts/ProjectTasksChart";
+import TaskCompletionChart from "./charts/TaskCompletionChart";
 import DashboardCard from "./DashboardCard";
 
 const Dashboard = () => {
@@ -8,10 +11,18 @@ const Dashboard = () => {
     isError: isStatsError,
   } = useGetDashboardStatsQuery();
 
-  if (isStatsLoading) return <p>Loading Project Stats</p>;
-  if (isStatsError) return <p>Failed to load projects stats</p>;
+  const {
+    data: projectstatsData,
+    isLoading: isProjectStatsLoading,
+    isError: isProjectStatsError,
+  } = useGetProjectStatsQuery();
 
-  if (!statsData) {
+  if (isStatsLoading || isProjectStatsLoading)
+    return <p>Loading Project Stats</p>;
+  if (isStatsError || isProjectStatsError)
+    return <p>Failed to load projects stats</p>;
+
+  if (!statsData || !projectstatsData) {
     return <p>Dashboard statistics unavailable.</p>;
   }
 
@@ -33,6 +44,19 @@ const Dashboard = () => {
             label="Pending Tasks"
             value={statsData.pending_tasks}
           />
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-1">
+            <TaskCompletionChart
+              completed={statsData.completed_tasks}
+              pending={statsData.pending_tasks}
+            />
+          </div>
+
+          <div className="lg:col-span-2">
+            <ProjectTasksChart projects={projectstatsData} />
+          </div>
         </div>
       </section>
     </div>

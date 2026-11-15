@@ -41,7 +41,7 @@ export const projectApi = baseApi.injectEndpoints({
       invalidatesTags: ["Projects"],
     }),
 
-    getProjectStats: builder.query<ProjectStats, void>({
+    getProjectStats: builder.query<[ProjectStats], void>({
       query: () => ({
         url: "projects/stats/",
       }),
