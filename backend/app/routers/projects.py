@@ -17,6 +17,13 @@ from app.schemas import (
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
 
+@router.get("/", response_model=list[ProjectResponse])
+def get_projects(db: Annotated[Session, Depends(get_db)]):
+    statement = select(Project).order_by(Project.project_id)
+    projects = db.scalars(statement).all()
+    return projects
+
+
 @router.post("/", status_code=201, response_model=ProjectResponse)
 def create_project(
     projectpayload: ProjectCreate, db: Annotated[Session, Depends(get_db)]
@@ -34,13 +41,6 @@ def create_project(
         raise HTTPException(status_code=500, detail="Unable to create project")
 
     return new_project
-
-
-@router.get("/", response_model=list[ProjectResponse])
-def get_projects(db: Annotated[Session, Depends(get_db)]):
-    statement = select(Project).order_by(Project.project_id)
-    projects = db.scalars(statement).all()
-    return projects
 
 
 @router.put("/{project_id}", response_model=ProjectResponse)
@@ -94,7 +94,7 @@ def delete_project(project_id: int, db: Annotated[Session, Depends(get_db)]):
     return {"message": f"Project {project_id} deleted successfully"}
 
 
-@router.get("/stats", response_model=list[ProjectStatsResponse])
+@router.get("/stats/", response_model=list[ProjectStatsResponse])
 def get_projects_stats(db: Annotated[Session, Depends(get_db)]):
     statement = (
         select(

@@ -78,3 +78,10 @@ class ProjectStatsResponse(BaseModel):
     total_tasks: int
     completed_tasks: int
     pending_tasks: int
+
+
+class DashboardResponse(BaseModel):
+    total_projects: int
+    total_tasks: int
+    completed_tasks: int
+    pending_tasks: int
