@@ -1,4 +1,4 @@
-import type { Project } from "../types/project";
+import type { Project, ProjectStats } from "../types/project";
 import { baseApi } from "./baseApi";
 
 export const projectApi = baseApi.injectEndpoints({
@@ -40,6 +40,13 @@ export const projectApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Projects"],
     }),
+
+    getProjectStats: builder.query<ProjectStats, void>({
+      query: () => ({
+        url: "projects/stats/",
+      }),
+      providesTags: ["Projects", "Tasks"],
+    }),
   }),
 });
 
@@ -48,4 +55,5 @@ export const {
   useCreateProjectMutation,
   useUpdateProjectMutation,
   useDeleteProjectMutation,
+  useGetProjectStatsQuery,
 } = projectApi;
