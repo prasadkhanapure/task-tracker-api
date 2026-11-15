@@ -26,11 +26,11 @@ const Dashboard = () => {
           />
           <DashboardCard label="Total Tasks" value={statsData.total_tasks} />
           <DashboardCard
-            label="Total Projects"
+            label="Completed Tasks"
             value={statsData.completed_tasks}
           />
           <DashboardCard
-            label="Total Projects"
+            label="Pending Tasks"
             value={statsData.pending_tasks}
           />
         </div>
