@@ -1,4 +1,6 @@
-from sqlalchemy import Boolean, ForeignKey, Integer, String
+from datetime import datetime
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -19,6 +21,13 @@ class Task(Base):
         ForeignKey("projects.project_id"), nullable=False
     )
 
+    priority: Mapped[str] = mapped_column(
+        String, default="none", server_default=None, nullable=False
+    )
+    due_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
 
 class Project(Base):
     __tablename__ = "projects"
@@ -27,4 +36,4 @@ class Project(Base):
 
     name: Mapped[str] = mapped_column(String, nullable=False)
 
-    description: Mapped[str] = mapped_column(String, nullable=True)
+    description: Mapped[str | None] = mapped_column(String, nullable=True)

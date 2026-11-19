@@ -1,7 +1,8 @@
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -11,6 +12,7 @@ from app.schemas import (
     TaskCreate,
     TaskListResponse,
     TaskPatch,
+    TaskPriority,
     TaskResponse,
     TaskUpdate,
 )
@@ -24,14 +26,26 @@ def fetch_data(
     offset: int = Query(default=0, ge=0),
     limit: int = Query(default=10, ge=1, le=100),
     completed: bool | None = None,
+    priority: TaskPriority | None = None,
+    overdue: bool = False,
 ):
 
     statement = select(Task).order_by(Task.task_id)
     count_statement = select(func.count()).select_from(Task)
 
+    overdue_condition = and_(Task.due_at < func.now(), Task.completed.is_(False))
+
     if completed is not None:
         statement = statement.where(Task.completed == completed)
         count_statement = count_statement.where(Task.completed == completed)
+
+    if priority is not None:
+        statement = statement.where(Task.priority == priority)
+        count_statement = count_statement.where(Task.priority == priority)
+
+    if overdue is True:
+        statement = statement.where(overdue_condition)
+        count_statement = count_statement.where(overdue_condition)
 
     statement = statement.offset(offset).limit(limit)
     tasks = db.scalars(statement).all()
@@ -60,7 +74,11 @@ def get_task_id(task_id: int, db: Annotated[Session, Depends(get_db)]):
 def create_task(taskPayload: TaskCreate, db: Annotated[Session, Depends(get_db)]):
 
     new_task = Task(
-        title=taskPayload.title, completed=False, project_id=taskPayload.project_id
+        title=taskPayload.title,
+        completed=False,
+        project_id=taskPayload.project_id,
+        priority=taskPayload.priority,
+        due_at=taskPayload.due_at,
     )
 
     try:
@@ -95,6 +113,8 @@ def update_task(
         task.title = payload.title
         task.completed = payload.completed
         task.project_id = payload.project_id
+        task.priority = payload.priority
+        task.due_at = payload.due_at
 
         db.commit()
         db.refresh(task)

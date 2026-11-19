@@ -1,4 +1,8 @@
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from typing import Literal
+from datetime import datetime
+
+TaskPriority = Literal["none", "low", "medium", "high"]
 
 
 class TaskBase(BaseModel):
@@ -8,6 +12,8 @@ class TaskBase(BaseModel):
 class TaskCreate(TaskBase):
     title: str = Field(min_length=1)
     project_id: int = Field(gt=0)
+    priority: TaskPriority = "none"
+    due_at: datetime | None = None
     # completed: bool
 
 
@@ -15,6 +21,8 @@ class TaskUpdate(TaskBase):
     title: str = Field(min_length=1)
     completed: bool
     project_id: int = Field(gt=0)
+    priority: TaskPriority = "none"
+    due_at: datetime | None = None
 
 
 class TaskPatch(TaskBase):
@@ -29,10 +37,15 @@ class TaskPatch(TaskBase):
         if "completed" in self.model_fields_set and self.completed is None:
             raise ValueError("completed cannot be null")
 
+        if "priority" in self.model_fields_set and self.priority is None:
+            raise ValueError("Priority cannot be null")
+
         return self
 
     title: str | None = Field(default=None, min_length=1)
     completed: bool | None = None
+    priority: TaskPriority | None = None
+    due_at: datetime | None = None
 
 
 class TaskResponse(BaseModel):
@@ -42,6 +55,8 @@ class TaskResponse(BaseModel):
     title: str
     completed: bool
     project_id: int
+    priority: TaskPriority
+    due_at: datetime | None
 
 
 class TaskListResponse(BaseModel):
