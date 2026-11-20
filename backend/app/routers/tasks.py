@@ -1,8 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, case, func, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -30,7 +30,34 @@ def fetch_data(
     overdue: bool = False,
 ):
 
-    statement = select(Task).order_by(Task.task_id)
+    ist = timezone(timedelta(hours=5, minutes=30))
+    today_start = datetime.now(ist).replace(hour=0, minute=0, second=0, microsecond=0)
+
+    tomorrow_start = today_start + timedelta(days=1)
+
+    todays_first = case(
+        (
+            and_(
+                Task.due_at >= today_start,
+                Task.due_at < tomorrow_start,
+            ),
+            0,
+        ),
+        else_=1,
+    )
+
+    priority_task = case(
+        (Task.priority == "high", 1),
+        (Task.priority == "medium", 2),
+        (Task.priority == "low", 3),
+        else_=4,
+    )
+    statement = select(Task).order_by(
+        todays_first.asc(),
+        priority_task.asc(),
+        Task.due_at.asc().nulls_last(),
+        Task.task_id.asc(),
+    )
     count_statement = select(func.count()).select_from(Task)
 
     overdue_condition = and_(Task.due_at < func.now(), Task.completed.is_(False))
