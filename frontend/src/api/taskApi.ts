@@ -1,10 +1,11 @@
 import { baseApi } from "./baseApi";
-import type { Task, TaskListResponse } from "../types/task";
-
-interface PaginationParams {
-  offset: number;
-  limit: number;
-}
+import type {
+  Task,
+  TaskListResponse,
+  CreateTaskPayload,
+  UpdateTaskPayload,
+  PaginationParams,
+} from "../types/task";
 
 export const taskApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -16,7 +17,7 @@ export const taskApi = baseApi.injectEndpoints({
       providesTags: ["Tasks"],
     }),
 
-    createTask: builder.mutation<Task, { title: string; project_id: number }>({
+    createTask: builder.mutation<Task, CreateTaskPayload>({
       query: (body) => ({
         url: "tasks/",
         method: "POST",
@@ -25,15 +26,7 @@ export const taskApi = baseApi.injectEndpoints({
       invalidatesTags: ["Tasks"],
     }),
 
-    updateTask: builder.mutation<
-      Task,
-      {
-        task_id: number;
-        title: string;
-        completed: boolean;
-        project_id: number;
-      }
-    >({
+    updateTask: builder.mutation<Task, UpdateTaskPayload>({
       query: ({ task_id, ...body }) => ({
         url: `tasks/${task_id}`,
         method: "PUT",
