@@ -2,12 +2,13 @@ import { useState } from "react";
 import { useCreateTaskMutation } from "../../api/taskApi";
 import { useGetProjectsQuery } from "../../api/projectApi";
 import type { Task } from "../../types/task";
+import { getCurrentLocalDateTime } from "./utils/tasks";
 
 const InputTask = () => {
   const [title, setTitle] = useState<string>("");
   const [projectId, setProjectId] = useState<number | null>(null);
   const [priority, setPriority] = useState<Task["priority"]>("none");
-  const [dueAt, setDueAt] = useState("");
+  const [dueAt, setDueAt] = useState(getCurrentLocalDateTime());
 
   const [createTask, { isLoading: isCreateLoading }] = useCreateTaskMutation();
   const { data, isLoading, isError } = useGetProjectsQuery();
@@ -37,7 +38,7 @@ const InputTask = () => {
 
       setTitle("");
       setPriority("none");
-      setDueAt("");
+      setDueAt(getCurrentLocalDateTime());
     } catch (error) {
       console.error("Unable to create the task.", error);
     }
@@ -72,7 +73,7 @@ const InputTask = () => {
           </select>
         </label>
         <label className="block text-sm font-medium text-slate-700">
-          Dealine
+          Deadline
           <input
             type="datetime-local"
             value={dueAt}

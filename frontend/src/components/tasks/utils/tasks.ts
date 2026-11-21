@@ -39,3 +39,7 @@ export const formatDueDate = (dueAt: string | null): string | null => {
     timeStyle: "short",
   }).format(date);
 };
+
+export const getCurrentLocalDateTime = (): string => {
+  return toDateTimeLocal(new Date().toISOString());
+};
