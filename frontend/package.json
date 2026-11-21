@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:backend": "cd ../backend && ../.env/Scripts/python.exe -m fastapi dev app/main.py",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
