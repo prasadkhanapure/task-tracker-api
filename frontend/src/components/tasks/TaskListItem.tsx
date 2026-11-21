@@ -3,15 +3,13 @@ import {
   useDeleteTaskMutation,
   useUpdateTaskMutation,
 } from "../../api/taskApi";
-import { Check, X, Trash2 } from "lucide-react";
-import type { Task } from "../../types/task";
-
-interface TaskProps {
-  task: Task;
-}
+import { Check, X } from "lucide-react";
+import type { TaskChanges, TaskProps } from "../../types/task";
+import TaskActionsMenu from "./TaskActionsMenu";
+import { priorityStyles, formatDueDate } from "./utils/tasks";
 
 const TaskListItem = ({ task }: TaskProps) => {
-  const { task_id, title, completed, project_id } = task;
+  const { task_id, title, completed, project_id, priority, due_at } = task;
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
@@ -26,6 +24,8 @@ const TaskListItem = ({ task }: TaskProps) => {
         title,
         completed: !completed,
         project_id,
+        priority,
+        due_at,
       }).unwrap();
     } catch (error) {
       console.error("Unable to update the task.", error);
@@ -49,18 +49,24 @@ const TaskListItem = ({ task }: TaskProps) => {
     setEditedTitle(title);
   };
 
-  const handleSaveEdit = async () => {
+  const handleSaveEdit = async (changedField: TaskChanges) => {
     try {
       await updateTask({
         task_id,
-        title: editedTitle,
+        title,
         completed,
         project_id,
+        priority,
+        due_at,
+        ...changedField,
       }).unwrap();
 
-      setIsEditing(false);
+      if ("title" in changedField) {
+        setIsEditing(false);
+      }
     } catch (error) {
       console.error("Unable to update the task.", error);
+      throw error;
     }
   };
 
@@ -68,6 +74,11 @@ const TaskListItem = ({ task }: TaskProps) => {
     setIsEditing(false);
     setEditedTitle(title);
   };
+
+  const dueDate = due_at ? new Date(due_at) : null;
+  const formattedDueDate = formatDueDate(due_at);
+  const isOverdue =
+    !completed && dueDate !== null && dueDate.getTime() < Date.now();
 
   return (
     <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 transition hover:bg-slate-100">
@@ -86,7 +97,6 @@ const TaskListItem = ({ task }: TaskProps) => {
             value={editedTitle}
             onChange={(event) => setEditedTitle(event.target.value)}
             autoFocus
-            // onBlur={handleCancelEdit}
             className="min-w-0 flex-1 rounded-md border border-violet-400 px-2 py-1 outline-none"
           />
           <button
@@ -94,7 +104,7 @@ const TaskListItem = ({ task }: TaskProps) => {
             title="Save changes"
             aria-label="Save changes"
             disabled={isUpdateLoader || !editedTitle.trim()}
-            onClick={handleSaveEdit}
+            onClick={() => handleSaveEdit({ title: editedTitle.trim() })}
             className="cursor-pointer rounded-md p-2 text-green-600 transition-colors hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Check size={18} />
@@ -110,22 +120,39 @@ const TaskListItem = ({ task }: TaskProps) => {
           </button>
         </>
       ) : (
-        <p
-          onDoubleClick={handleDoubleClickEdit}
-          className={`flex-1 text-sm ${
-            completed ? "text-slate-400 line-through" : "text-slate-800"
-          }`}
-        >
-          {title}
-        </p>
+        <>
+          <p
+            onDoubleClick={handleDoubleClickEdit}
+            className={`flex-1 text-sm ${
+              completed ? "text-slate-400 line-through" : "text-slate-800"
+            }`}
+          >
+            {title}
+          </p>
+          <span
+            className={`rounded-md px-2 py-1 text-xs font-medium capitalize ${priorityStyles[priority]}`}
+          >
+            {priority}
+          </span>
+          {formattedDueDate && (
+            <span
+              className={`text-xs ${
+                isOverdue ? "font-medium text-red-600" : "text-slate-500"
+              }`}
+            >
+              {isOverdue ? "Overdue: " : "Due: "}
+              {formattedDueDate}
+            </span>
+          )}
+        </>
       )}
-      <button
-        onClick={handleDelete}
-        disabled={isDeleteLoader || isEditing}
-        className="cursor-pointer rounded-md p-2 text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
-      >
-        <Trash2 size={18} className="text-red-500" />
-      </button>
+      <TaskActionsMenu
+        priority={priority}
+        dueAt={due_at}
+        onApplyEdit={handleSaveEdit}
+        onDelete={handleDelete}
+        disabled={isUpdateLoader || isDeleteLoader}
+      />
     </div>
   );
 };
